@@ -1,0 +1,8 @@
+name = Webform Select Email
+description = Extends the webform module to be able to specify an email address per select option when a select component is chosen for an email.
+core = 6.x
+version = 6.x-1.0
+
+dependencies[] = webform
+
+package = Other

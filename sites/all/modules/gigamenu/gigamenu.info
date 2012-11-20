@@ -1,0 +1,13 @@
+; $Id: gigamenu.info,v 1.2 2010/11/04 15:40:17 recidive Exp $
+name = Giga Menu
+description = Allow setting a menu to behave like a Megamenu.
+dependencies[] = menu
+dependencies[] = hoverintent
+core = 6.x
+
+; Information added by drupal.org packaging script on 2010-11-06
+version = "6.x-1.0-rc1"
+core = "6.x"
+project = "gigamenu"
+datestamp = "1289014541"
+

@@ -1,0 +1,160 @@
+<?php
+// $Id: gigamenu.module,v 1.6 2010/11/06 03:21:01 recidive Exp $
+
+/**
+ * @file
+ * This is a simple implementation of mega menu system.
+ */
+
+define('GIGAMENU_VERTICAL', 'vertical');
+define('GIGAMENU_HORIZONTAL', 'horizontal');
+
+/**
+ * Implementation of hook_theme().
+ */
+function gigamenu_theme() {
+  return array(
+    'gigamenu_menu' => array(
+      'arguments' => array('output' => NULL),
+    ),
+    'gigamenu_menu_tree' => array(
+      'arguments' => array('tree' => NULL, 'orientation' => NULL),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_form_FORM_ID_alter().
+ */
+function gigamenu_form_menu_edit_menu_alter(&$form, &$form_state) {
+  $form['gigamenu'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#title' => t('Giga menu'),
+  );
+  $form['gigamenu']['gigamenu_enabled'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Make this menu a giga menu'),
+    '#description' => t("Don't forget to make expanded the menu items which sub-items you want displayed on the giga menu, on the menu administration page."),
+    '#default_value' => variable_get('gigamenu_enabled_' . $form['menu_name']['#value'], FALSE),
+  );
+  $form['gigamenu']['gigamenu_orientation'] = array(
+    '#type' => 'radios',
+    '#title' => t('Orientation'),
+    '#description' => t("Change orientation depending on where you're going to put this giga menu on."),
+    '#options' => array(GIGAMENU_HORIZONTAL => t('Horizontal'), GIGAMENU_VERTICAL => t('Vertical')),
+    '#default_value' => variable_get('gigamenu_orientation_' . $form['menu_name']['#value'], GIGAMENU_HORIZONTAL),
+  );
+
+  // Move 'Save' button bellow our checkbox.
+  $form['submit']['#weight'] = 5;
+
+  // Register a submit function to save our settings.
+  $form['#submit'][] = 'gigamenu_form_menu_edit_menu_submit';
+}
+
+/**
+ * Submit handler. Save custom menu settings.
+ */
+function gigamenu_form_menu_edit_menu_submit($form, &$form_state) {
+  foreach (array('enabled', 'orientation') as $option) {
+    variable_set('gigamenu_' . $option . '_' . $form_state['values']['menu_name'], $form_state['values']['gigamenu_' . $option]);
+  }
+}
+
+/**
+ * Implementation of hook_block().
+ */
+function gigamenu_block($op = 'list', $delta = 0) {
+  $menus = menu_get_menus();
+  if ($op == 'list') {
+    $blocks = array();
+    foreach ($menus as $name => $title) {
+      if (variable_get('gigamenu_enabled_' . $name, FALSE)) {
+        $blocks['gigamenu_' . $name]['info'] = t('Giga menu: !name', array('!name' => check_plain($title)));
+        $blocks['gigamenu_' . $name]['cache'] = BLOCK_NO_CACHE;
+      }
+    }
+    return $blocks;
+  }
+  else if ($op == 'view') {
+    // Remove 'gigamenu_' prefix from delta to get actual menu name.
+    $menu_name = substr($delta, 9);
+    $data['subject'] = check_plain($menus[$menu_name]);
+    $data['content'] = gigamenu_render_menu($menu_name);
+
+    // Add css and js files.
+    $path = drupal_get_path('module', 'gigamenu');
+    drupal_add_css($path . '/gigamenu.css');
+
+    // Add Hover Intent and Giga Menu module javascript files.
+    hoverintent_add();
+    drupal_add_js($path . '/gigamenu.js');
+
+    return $data;
+  }
+}
+
+/**
+ * Render a menu as a mega menu.
+ *
+ * @param $menu_name
+ *   String, machine name of the menu to render.
+ */
+function gigamenu_render_menu($menu_name) {
+  static $menu_output = array();
+
+  if (!isset($menu_output[$menu_name])) {
+    $tree = menu_tree_page_data($menu_name);
+    $orientation = variable_get('gigamenu_orientation_' . $menu_name, GIGAMENU_HORIZONTAL);
+    $menu_output[$menu_name] = theme('gigamenu_menu', gigamenu_render_menu_tree($tree), $orientation);
+  }
+  return $menu_output[$menu_name];
+}
+
+/**
+ * Render a menu hierarchy.
+ *
+ * @param $tree
+ *   Array representing a menu hierarchy.
+ */
+function gigamenu_render_menu_tree($tree, $level = 0, $counter = 0) {
+  $output = '';
+  foreach ($tree as $data) {
+    if (!$data['link']['hidden']) {
+      $link = theme('menu_item_link', $data['link']);
+      $extra_classes = array(
+        'gigamenu-level-' . $level,
+        'gigamenu-id-' . $data['link']['mlid'],
+      );
+      if ($data['below']) {
+        $counter++;
+        $extra_classes[] = 'gigamenu-child-' . $counter;
+        $output .= theme('menu_item', $link, $data['link']['has_children'], gigamenu_render_menu_tree($data['below'], $level + 1), $data['link']['in_active_trail'], 'gigamenu-heading ' . implode(' ', $extra_classes));
+      }
+      else {
+        $output .= theme('menu_item', $link, $data['link']['has_children'], '', $data['link']['in_active_trail'], implode(' ', $extra_classes));
+      }
+    }
+  }
+  return theme('gigamenu_menu_tree', $output);
+}
+
+/**
+ * Add wrapper class to menu output.
+ *
+ * @ingroup themeable
+ */
+function theme_gigamenu_menu($output, $orientation) {
+  return '<div class="gigamenu-wrapper gigamenu-' . $orientation . '">' . $output . '</div>';
+}
+
+/**
+ * Group list items.
+ *
+ * @ingroup themeable
+ */
+function theme_gigamenu_menu_tree($tree) {
+  return '<ul class="gigamenu menu">' . $tree . '</ul>';
+}

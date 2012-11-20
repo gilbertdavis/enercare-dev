@@ -1,0 +1,89 @@
+<?php
+//$Id: menutree.module,v 1.4.2.3 2009/05/27 19:01:00 crell Exp $
+
+/**
+ * @file
+ * This module provides a simple "site map" tree based on the menu system rather
+ * than on taxonomies.
+ *
+ * @author Larry Garfield
+ *
+ */
+
+/**
+ * Page title handling option constant definitions.
+ */
+
+/**
+ * Display the menu title as the page title.
+ */
+define('MENUTREE_TITLE_PAGE', 0x0001);
+
+/**
+ * Display the menu title inline in the body of the page.
+ */
+define('MENUTREE_TITLE_BODY', 0x0002);
+
+/**
+ * Implementation of hook_theme()
+ */
+function menutree_theme() {
+  return array(
+    'menutree_page' => array(
+      'arguments' => array(
+        'title' => NULL,
+        'description' => NULL,
+        'tree' => NULL,
+      ),
+      'file' => 'menutree.pages.inc',
+      ),
+    'menutree_tree' => array('arguments' => array('menu_name' => NULL)),
+  );
+}
+
+/**
+ * Implementation of hook_perm().
+ */
+function menutree_perm() {
+  return array('view site tree', 'administer menu tree');
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function menutree_menu() {
+  $items = array();
+  $items['menutree'] = array(
+    'title' => 'Sitemap',
+    'page callback' => 'menutree_display_page',
+    'page arguments' => array(menu_load('primary-links')),
+    'access arguments' => array('view site tree'),
+    'type' => MENU_CALLBACK,
+    'file' => 'menutree.pages.inc',
+  );
+  $items['menutree/%menu'] = array(
+    'title' => 'Sitemap',
+    'page arguments' => array(1),
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('view site tree'),
+    'file' => 'menutree.pages.inc',
+  );
+  $items['menutree/all'] = array(
+    'title' => 'Sitemap',
+    'page callback' => 'menutree_display_all',
+    'page arguments' => array(),
+    'access arguments' => array('view site tree'),
+    'type' => MENU_CALLBACK,
+    'file' => 'menutree.pages.inc',
+  );
+  $items['admin/build/menutree'] = array(
+    'title' => 'Menu trees',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('menutree_settings'),
+    'description' => 'Configure page titles and intro text for menu tree pages.',
+    'access arguments' => array('administer menu tree'),
+    'file' => 'menutree.admin.inc',
+  );
+  return $items;
+}
+

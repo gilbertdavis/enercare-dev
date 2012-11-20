@@ -1,0 +1,25 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Installation file for jQuery UI Loader module.
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function jquery_ui_loader_install() {
+  variable_set('jquery_ui_loader_visibility', 0);
+} // function jquery_ui_loader_install
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function  jquery_ui_loader_uninstall() {
+  variable_del('jquery_ui_loader_filelist');
+  variable_del('jquery_ui_loader_themelist');
+  variable_del('jquery_ui_loader_roles');
+  variable_del('jquery_ui_loader_visibility');
+  variable_del('jquery_ui_loader_pages');
+} // function jquery_ui_loader_uninstall

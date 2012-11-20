@@ -1,0 +1,11 @@
+name = MenuTree
+description = Display a site-map page based on one or more menus
+dependencies[] = menu
+core = 6.x
+
+; Information added by drupal.org packaging script on 2009-08-25
+version = "6.x-1.4"
+core = "6.x"
+project = "menutree"
+datestamp = "1251238572"
+

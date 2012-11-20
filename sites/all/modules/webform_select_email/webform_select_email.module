@@ -1,0 +1,137 @@
+<?php
+/**
+ * @file webform_select_email.module
+ * Extends the webform module to be able to specify an email address per 
+ * select option when a select component is chosen for an email.
+ *
+ * @author Matthew Oliveira <matt@tricorpweb.com>
+ * @date 22-Sep-2010
+ */
+
+/**
+ * Implementation of hook_webform_submission_presave().
+ * 
+ * @param object $node
+ * @param object $submission
+ * @see webform_hooks.php
+ */
+function webform_select_email_webform_submission_presave(&$node, $submission) {
+  
+  // Pseudocode
+  // For each email to be sent
+  //   If it is a non numeric email
+  //     Check if we have component_values associated with it
+  //     If we do then, for each component value associated, only send then email 
+  //     if an appropriate value for the component is selected
+  foreach ($node->webform['emails'] as $eid => $email) {
+    $send_email = false;
+    
+    if (!is_numeric($email['email'])) {
+      $result = db_query('SELECT cid, component_values FROM {webform_select_email} WHERE nid = %d AND eid = %d', $node->nid, $email['eid']);
+      while ($row = db_fetch_object($result)) {
+        $row->component_values = unserialize($row->component_values);
+        
+        if (is_array($submission->data[$row->cid]['value'])) {
+          // Loop through each value, if one of the values matches the component 
+          // values, allow the email to pass
+          foreach($submission->data[$row->cid]['value'] as $value) {
+            if (in_array($value, $row->component_values)) {
+              $send_email = true;
+              break 2;
+            }
+          }
+        } 
+        else {
+          if (in_array($submission->data[$row->cid]['value'], $row->component_values)) {
+            $send_email = true;
+          }
+        }
+        
+        if (!$send_email) {
+          // The value selected for this component does not match a value 
+          // for which this email should be sent
+          unset($node->webform['emails'][$eid]);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implementation of hook_form_alter().
+ */
+function webform_select_email_form_alter(&$form, &$form_state, $form_id) {
+  
+  if ($form_id == 'webform_email_edit_form' && !empty($form['eid']['#value'])) {
+    module_load_include('inc', 'webform', 'components/select');
+    
+    // For every select email_component, add in text fields for each value of
+    // the select, so that users can supply an email address per value
+    $email_component_options = $form['email_component']['#options'];
+    if (is_array($email_component_options)) {
+      $i = 0;
+      
+      foreach ($email_component_options as $cid => $label) {
+        $email_component_values = array();
+        $email_component_values = _webform_select_options($form['node']['#value']->webform['components'][$cid]);
+        
+        if (is_array($email_component_values) && !empty($email_component_values)) {
+          // Try to pull up the saved value if exists
+          $selected = db_result(db_query('SELECT component_values FROM {webform_select_email} WHERE nid = %d AND eid = %d AND cid = %d', $form['node']['#value']->nid, $form['eid']['#value'], $cid));
+          if ($selected) {
+            $selected = unserialize($selected);
+          } 
+          else {
+            $selected = array();
+          }
+
+          // Add a textfield to the form to specify an email to send to for each email_component_value
+          $form['email_component_value_'.$cid] = array(
+            '#type' => 'select',
+            '#title' => t('Select values of component \'@label\' to email for', array('@label' => $label)),
+            '#weight' => 6 + (($i += 1) * 0.1),
+            '#options' => $email_component_values,
+            '#multiple' => true,
+            '#default_value' => $selected,
+            '#description' => t('You can use this field to limit when the above Custom E-mail to address receives an e-mail.  Do so by selecting values of \'@label\' for which the above email should be notified.', array('@label' => $label)),
+            '#prefix' => '<div class="email-component-value">',
+            '#suffix' => '</div>',
+
+          );
+        }
+      }
+    }
+    
+    // Add submit function to save the added fields
+    $form['#submit'][] = 'webform_select_email_edit_form_submit';
+  }
+}
+
+/**
+ * Added submit function for the webform_email_edit_form form altered above.
+ */
+function webform_select_email_edit_form_submit($form, &$form_state) {
+  
+  if (!empty($form_state['values']['eid'])) {
+    // Put together email column
+    foreach ($form_state['values'] as $key => $value) {
+
+      // Look for our added fields
+      if (strstr($key, 'email_component_value_')) {
+        $data = array(
+          'nid' => $form_state['values']['node']->nid,
+          'eid' => $form_state['values']['eid'],
+          'cid' => str_replace('email_component_value_', '', $key),
+          'component_values' => $value,
+        );
+        $row = db_result(db_query('SELECT nid FROM {webform_select_email} WHERE nid = %d AND eid = %d AND cid = %d', $data['nid'], $data['eid'], $data['cid']));
+        if ($row) {
+          drupal_write_record('webform_select_email', $data, array('nid', 'eid', 'cid'));
+        } 
+        else {
+          drupal_write_record('webform_select_email', $data);
+        }
+      }
+    }
+  }
+}
