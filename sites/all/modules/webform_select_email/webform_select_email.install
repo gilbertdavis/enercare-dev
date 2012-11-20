@@ -1,0 +1,67 @@
+<?php
+/**
+ * @file webform_select_email.install
+ * Install file for the webform_select_email module.  Installs the needed
+ * DB schema.
+ *
+ * @author Matthew Oliveira <matt@tricorpweb.com>
+ * @date 23-Sep-2010
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function webform_select_email_install() {
+
+  drupal_install_schema('webform_select_email');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function webform_select_email_uninstall() {
+
+  drupal_uninstall_schema('webform_select_email');
+}
+
+/**
+ * Implementation of hook_schema(). Defines this modules DB schema
+ */
+function webform_select_email_schema() {
+
+  $schema['webform_select_email'] = array(
+    'fields' => array(
+      'nid' => array(
+        'description' => 'The node identifier of a webform.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'eid' => array(
+        'description' => 'The e-mail identifier for this row\'s settings.',
+        'type' => 'int',
+        'size' => 'small',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'cid' => array(
+        'description' => 'The identifier for this component within this node, starts at 0 for each node.',
+        'type' => 'int',
+        'size' => 'small',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'component_values' => array(
+        'description' => 'The values of the selected component for which to send the email.',
+        'type' => 'text',
+        'not null' => FALSE,
+        'serialize' => TRUE,
+      ),
+    ),
+    'primary key' => array('nid', 'eid', 'cid'),
+  );
+
+  return $schema;
+}

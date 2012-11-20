@@ -1,0 +1,13 @@
+; $Id$
+name = jQuery UI Loader
+description = Provides a simple administrative interface for specifying jQuery UI widgets and effects to load during page requests.
+package = User interface
+core = 6.x
+
+; This module depends on the jQuery UI module.
+dependencies[] = jquery_ui
+
+; The following will be removed when this module is contributed to drupal.org.
+version = "6.x-1.0"
+core = "6.x"
+project = "jquery_ui_loader"

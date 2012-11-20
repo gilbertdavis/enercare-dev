@@ -1,0 +1,178 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Provides an administrative interface for specifying jQuery UI widgets and
+ * effects to load during page requests.
+ *
+ * This module is a small, lightweight helper module that is meant to be used
+ * in combination with the jQuery UI module. It lets site administrators specify
+ * a set of jQuery UI widgets and effects to load during page requests so
+ * developers can write jQuery UI-specific javascript code in their theme files,
+ * node content and block content.
+ */
+ 
+/**
+ * Implementation of hook_help().
+ */
+function jquery_ui_loader_help($path, $arg) {
+  $output = '';
+  switch ($path) {
+    case "admin/help#jquery_ui_loader":
+    case "admin/settings/jquery_ui_loader":
+      $output = '<p>'.  t("Provides a simple administrative interface for specifying jQuery UI widgets and " .
+                          "effects to load during page requests, by making use of the jQuery UI module. The " .
+                          "jQuery UI module, when installed, does not do anything on its own. At least one other " .
+                          "module must be installed to use it to add jQuery UI widgets and effects to your pages. " .
+                          "In some cases you may not have a need for another module but you may have " .
+                          "snippets of javascript code in your theme or in content or blocks that depend " .
+                          "on the jQuery UI widgets/effects. This module acts as a helper module by " .
+                          "allowing any user with the right permissions to specify a list of jQuery UI " .
+                          "widgets and effects to load during page requests.") .'</p>';
+      break;
+  }
+  return $output;
+} // function jquery_ui_loader_help
+
+/**
+ * Implementation of hook_perm().
+ */
+function jquery_ui_loader_perm() {
+  return array('administer jquery_ui_loader', 'use PHP for jquery UI script visibility');
+} // function jquery_ui_loader_perm
+
+/**
+ * Implementation of hook_menu().
+ */
+function jquery_ui_loader_menu() {
+  $items['admin/settings/jquery_ui_loader'] = array(
+    'title' => 'JQuery UI Loader',
+    'description' => 'Configure the settings used to load the jQuery UI widgets and effects.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('jquery_ui_loader_admin_settings_form'),
+    'access arguments' => array('administer jquery_ui_loader'),
+    'file' => 'jquery_ui_loader.admin.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+} // function jquery_ui_loader_menu
+
+/**
+ * Implementation of hook_init
+ */ 
+function jquery_ui_loader_init() {
+  global $user;
+
+  // 1. Add jQuery UI widgets/effects based on visibility value.
+  // 2. Check if we should add the jQuery UI widgets/effects for the currently active user's role.
+  if (_jquery_ui_loader_visibility_pages() && _jquery_ui_loader_visibility_user($user)) {
+
+    $file_list = variable_get('jquery_ui_loader_filelist', '');
+    if (!empty($file_list)) {
+      $file_list = explode(' ', preg_replace('/\n|\r|\r\n/', ' ', $file_list));
+      $temp = array();
+
+      foreach ($file_list as $a_file) {
+        $a_file = trim($a_file);
+        if (!empty($a_file)) {
+          $temp[] = $a_file;
+        }
+      }      
+      $file_list = $temp;
+      module_load_include('.module', 'jquery_ui');
+      jquery_ui_add($file_list);
+    }
+    
+    $theme_list = variable_get('jquery_ui_loader_themelist', 'default/ui.all.css');
+    if (!empty($theme_list) && !empty($file_list)) {
+      $theme_list = explode(' ', preg_replace('/\n|\r|\r\n/', ' ', $theme_list));
+      foreach ($theme_list as $a_file) {
+        $a_file = trim($a_file);
+        if (!empty($a_file)) {
+          drupal_add_css(drupal_get_path('module', 'jquery_ui') . "/jquery.ui/themes/$a_file");
+        }
+      }      
+    }
+  }
+} // function jquery_ui_loader_init
+
+/**
+ * jQuery UI loading visibility check for a user object.
+ *
+ * @param $account
+ *   A user object containing an array of roles to check.
+ * @return boolean
+ *   A decision on if we should add the jQuery UI files (specified in the settings) for the current.
+ */
+function _jquery_ui_loader_visibility_user($account) {
+  return _jquery_ui_loader_visibility_roles($account);
+} // function _jquery_ui_loader_visibility_user
+
+/**
+ * Based on visibility setting this function returns TRUE if jQuery UI code should
+ * be added for the current role and otherwise FALSE.
+ */
+function _jquery_ui_loader_visibility_roles($account) {
+
+  $enabled = FALSE;
+  $roles = variable_get('jquery_ui_loader_roles', array());
+
+  if (array_sum($roles) > 0) {
+    // One or more roles are selected for loading of the jQuery UI files.
+    foreach (array_keys($account->roles) as $rid) {
+      // Is the current user a member of one of the roles enabled?
+      if (isset($roles[$rid]) && $rid == $roles[$rid]) {
+        // Current user is a member of a role that should have the jQuery UI files added.
+        $enabled = TRUE;
+        break;
+      }
+    }
+  }
+  else {
+    // No role is selected, therefore all roles should have the jQuery UI files added.
+    $enabled = TRUE;
+  }
+
+  return $enabled;
+} // function _jquery_ui_loader_visibility_roles
+
+/**
+ * Based on visibility setting this function returns TRUE if jQuery UI code should
+ * be added to the current page and otherwise FALSE.
+ */
+function _jquery_ui_loader_visibility_pages() {
+  static $page_match;
+
+  // Cache visibility setting in hook_init for hook_footer.
+  if (!isset($page_match)) {
+
+    $visibility = variable_get('jquery_ui_loader_visibility', 0);
+    $pages = variable_get('jquery_ui_loader_pages', '');
+
+    // Match path if necessary.
+    if (!empty($pages)) {
+      if ($visibility < 2) {
+        $path = drupal_get_path_alias($_GET['q']);
+        // Compare with the internal and path alias (if any).
+        $page_match = drupal_match_path($path, $pages);
+        if ($path != $_GET['q']) {
+          $page_match = $page_match || drupal_match_path($_GET['q'], $pages);
+        }
+        // When $visibility has a value of 0, the files are loaded in all pages
+        // except those listed in $pages. When set to 1, the files are loaded
+        // only on those pages listed in $pages.
+        $page_match = !($visibility xor $page_match);
+      }
+      else {
+        $page_match = drupal_eval($pages);
+      }
+    }
+    else {
+      $page_match = TRUE;
+    }
+
+  }
+  return $page_match;
+} // function _jquery_ui_loader_visibility_pages

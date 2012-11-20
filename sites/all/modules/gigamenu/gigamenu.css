@@ -1,0 +1,66 @@
+/* $Id: gigamenu.css,v 1.3 2010/11/06 03:21:01 recidive Exp $ */
+
+/* Override Garland styles */
+#header-region .gigamenu-wrapper * {
+  display: block;
+}
+#header-region ul.gigamenu li {
+  margin: 0;
+}
+
+ul.gigamenu li {
+  z-index: 1000;
+}
+
+ul.gigamenu li ul {
+  z-index: 999;
+  width: 750px;
+  padding: 1em;
+  margin: 0;
+  background: #ddd;
+  position: absolute;
+}
+ul.gigamenu li li.gigamenu-level-1 {
+  float: left;
+}
+ul.gigamenu li li ul {
+  padding: 0 0 1em 0;
+  margin: 0;
+  /* Reset style from megamenu wrapper ul */
+  width: 250px;
+  background: none;
+  position: relative;
+}
+ul.gigamenu li li a {
+  font-size: 1.2em;
+  color: black;
+}
+ul.gigamenu li li li a {
+  font-size: 1em;
+  color: inherit;
+}
+ul.gigamenu li li li ul {
+  padding: 0 0 .5em .5em;
+}
+ul.gigamenu li li li li a {
+  font-size: .9em;
+}
+
+/* Horizontal menus */
+.gigamenu-horizontal ul.gigamenu li.gigamenu-level-0 {
+  float: left;
+}
+.gigamenu-horizontal ul.gigamenu li.gigamenu-level-0 a {
+  padding-right: 1em;
+}
+
+/* Vertical menus */
+.gigamenu-vertical ul.gigamenu li.gigamenu-level-0 {
+  width: 10em;
+}
+.gigamenu-vertical ul.gigamenu ul {
+  margin: -1em 0 0 10em;
+}
+.gigamenu-vertical ul.gigamenu ul ul {
+  margin: 0;
+}

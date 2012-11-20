@@ -1,0 +1,172 @@
+/* $Id: twocol.css,v 1.1.2.1 2008/12/16 21:27:58 merlinofchaos Exp $ */
+
+#header {
+  position: relative;
+  z-index: 10;
+  overflow: hidden;
+  height: 90px;
+}
+
+#front-content {
+	width: 660px;
+	min-height: 600px;
+	float: left;
+}
+
+#front-aside {
+	width: 233px;
+	float: left;
+	margin-left: 10px;
+	text-align: center;
+}
+
+#front-aside img {
+	display: block;
+	margin: 0 auto;
+}
+
+#solutions-block, #connections-block {
+	float: left;
+	width: 323px;
+	border: 1px solid #a3ba7d;
+	border-bottom: none;
+	padding-bottom: 2000px;
+	margin-bottom: -2000px;
+}
+
+#solutions-block ul.gigamenu > li.gigamenu-level-0 > ul {
+	border-bottom: 15px solid #a3c36e;
+	background-color: #3c6101 !important;
+}
+
+#solutions-block ul.gigamenu li, #connections-block ul.gigamenu li {
+	display: block;
+}
+
+#solutions-block ul.gigamenu > li.gigamenu-level-0 > ul > li > a {
+	color: #d3fd8d !important;
+	line-height: 20px;
+	display: block;
+}
+
+#connections-block ul.gigamenu > li.gigamenu-level-0 > ul > li > a {
+	line-height: 20px;
+	display: block;
+}
+
+#offer-solutions {
+	border: 1px solid #a3ba7d;
+	margin-bottom: 10px;
+	background-color: #f9ffef;
+}
+
+#offer-solutions .pane-content, #offer-connections .pane-content {
+	margin-bottom: 1em;
+}
+
+#offer-connections {
+	border: 1px solid #9ab9ce;
+	margin-bottom: 10px;
+	background-color: #f7f7f7;
+}
+
+#connections-block {
+	border: 1px solid #9ab9ce;
+	border-bottom: none;
+	margin-left: 10px;
+}
+
+#front-content ul.gigamenu {
+	position: static;
+}
+
+#front-content ul.gigamenu ul {
+	position: absolute;
+	left: 10px;
+}
+
+#front-content #banner img {
+	width: 658px;
+	height: 157px;
+}
+
+#front-content #banner {
+	width: 658px;
+	height: 157px;
+	border: 1px solid #ccc;
+	margin-bottom: 10px;
+}
+
+#front-content .mega-menu-arrow {
+	display: none;
+}
+#solutions-block img:first-child, #connections-block img:first-child {
+	*margin-top: -7px;
+}
+#solutions-block .pane-content, #connections-block .pane-content {
+	margin: 20px;
+}
+
+#solutions-block .pane-content img, #connections-block .pane-content img {
+	margin: -20px 0 0 -20px;
+}
+
+.submenu {
+	height: 23px;
+	border-bottom: 1px solid #ccc;
+}
+
+.submenu li {
+	font-size: 10px;
+	text-transform: uppercase;
+	padding: 0 13px;
+	float: left;
+	text-align: center;
+	line-height: 24px;
+	border-left: 1px solid #ccc;
+}
+
+.submenu li:first-child {
+	border-left: none;
+}
+
+.submenu li a {
+	text-decoration: none;
+	color: #000;
+}
+
+#connections-block .submenu li {
+	width: 323px;
+	padding: 0;
+}
+
+.pane-content ul {
+	padding: 20px 0 1em 20px;
+	list-style-type: disc;
+	border-bottom: 1px dashed #ccc;
+	color: #85a352;
+}
+
+#connections-block .pane-content ul {
+	color: #9ab9ce;
+}
+
+.pane-content ul li {
+	margin-bottom: 5px;
+}
+
+.pane-content a {
+	color: #000;
+}
+
+.pane-content a:hover {
+	color: #004c80;
+}
+
+.pane-content p {
+	margin-top: 1em;
+}
+
+.pane-content p:first-child {
+	margin-top: 0;
+}

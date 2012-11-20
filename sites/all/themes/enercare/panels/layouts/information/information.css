@@ -1,0 +1,19 @@
+/* $Id: twocol.css,v 1.1.2.1 2008/12/16 21:27:58 merlinofchaos Exp $ */
+
+#information-content {
+  float: left;
+  width: 402px;
+  padding: 15px;
+}
+
+#information-aside {
+  float: left;
+  width: 227px;
+  margin-left: 1px;
+}
+
+#panels-edit-display .panel-pane,
+#panels-edit-display .helperclass {
+  margin: .5em;
+}
+
